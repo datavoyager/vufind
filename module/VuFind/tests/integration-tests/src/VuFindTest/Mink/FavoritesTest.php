@@ -105,7 +105,7 @@ class FavoritesTest extends \VuFindTest\Unit\MinkTestCase
         $page->find('css', '.modal-body .btn.btn-primary')->click();
 
         // Invalid email
-        $this->fillInAccountForm($page, ['email' => 'blargasaurus']);
+        $this->fillInAccountForm($session, $page, ['email' => 'blargasaurus']);
         $this->assertNull(
             $page->find('css', '.modal-body .btn.btn-primary.disabled')
         );
@@ -225,7 +225,7 @@ class FavoritesTest extends \VuFindTest\Unit\MinkTestCase
         );
         $page->find('css', '.modal-body .btn.btn-primary')->click();
         $this->fillInAccountForm(
-            $page, ['username' => 'username2', 'email' => 'blargasaurus']
+            $session, $page, ['username' => 'username2', 'email' => 'blargasaurus']
         );
         $this->assertNull(
             $page->find('css', '.modal-body .btn.btn-primary.disabled')

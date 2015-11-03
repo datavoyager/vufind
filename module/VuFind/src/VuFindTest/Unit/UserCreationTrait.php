@@ -28,7 +28,7 @@
  * @link     http://vufind.org/wiki/vufind2:unit_tests Wiki
  */
 namespace VuFindTest\Unit;
-use Behat\Mink\Element\Element;
+use Behat\Mink\Element\Element, Behat\Mink\Session;
 
 /**
  * Trait with utility methods for user creation/management. Assumes that it
@@ -83,13 +83,15 @@ trait UserCreationTrait
     /**
      * Mink support function: fill in the account creation form.
      *
+     * @param Session $session   Mink session.
      * @param Element $page      Page element.
      * @param array   $overrides Optional overrides for form values.
      *
      * @return void
      */
-    protected function fillInAccountForm(Element $page, $overrides = [])
-    {
+    protected function fillInAccountForm(Session $session, Element $page,
+        $overrides = []
+    ) {
         $defaults = [
             'firstname' => 'Tester',
             'lastname' => 'McTestenson',
@@ -100,8 +102,7 @@ trait UserCreationTrait
         ];
 
         foreach ($defaults as $field => $default) {
-            $element = $page->findById('account_' . $field);
-            $this->assertNotNull($element);
+            $element = $this->findWithWait($session, $page, '#account_' . $field);
             $element->setValue(
                 isset($overrides[$field]) ? $overrides[$field] : $default
             );

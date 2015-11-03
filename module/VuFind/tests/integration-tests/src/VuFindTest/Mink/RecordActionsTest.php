@@ -105,7 +105,7 @@ class RecordActionsTest extends \VuFindTest\Unit\MinkTestCase
         $this->assertNotNull($page->find('css', '.modal [name="username"]'));
         // Create new account
         $page->find('css', '.modal-body .createAccountLink')->click();
-        $this->fillInAccountForm($page);
+        $this->fillInAccountForm($session, $page);
         $page->find('css', '.modal-body .btn.btn-primary')->click();
         // Make sure page updated for login
         $page = $this->gotoRecord($session);
@@ -153,7 +153,7 @@ class RecordActionsTest extends \VuFindTest\Unit\MinkTestCase
         // Make account
         $page->find('css', '.modal-body .createAccountLink')->click();
         $this->fillInAccountForm(
-            $page, ['username' => 'username2', 'email' => 'test2@com.com']
+            $session, $page, ['username' => 'username2', 'email' => 'test2@com.com']
         );
         $page->find('css', '.modal-body .btn.btn-primary')->click();
         $this->assertNotNull($page->find('css', '.modal #addtag_tag'));

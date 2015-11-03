@@ -28,6 +28,7 @@
  */
 namespace VuFindTest\Unit;
 use Behat\Mink\Driver\ZombieDriver, Behat\Mink\Session,
+    Behat\Mink\Element\Element,
     VuFind\Config\Locator as ConfigLocator,
     VuFind\Config\Writer as ConfigWriter;
 
@@ -166,6 +167,25 @@ abstract class MinkTestCase extends DbTestCase
                 rename($backup, $local);
             }
         }
+    }
+
+    /**
+     * Wait for an element to exist, then retrieve it.
+     *
+     * @param Session $session  Mink session
+     * @param Element $page     Page element
+     * @param string  $selector CSS selector
+     * @param int     $timeout  Wait timeout (in ms)
+     *
+     * @return mixed
+     */
+    protected function findWithWait(Session $session, Element $page, $selector,
+        $timeout = 1000
+    ) {
+        $session->wait($timeout, "$('$selector').children().length > 0");
+        $result = $page->find('css', $selector);
+        $this->assertTrue(is_object($result));
+        return $result;
     }
 
     /**
