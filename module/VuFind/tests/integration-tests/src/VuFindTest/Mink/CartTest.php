@@ -27,7 +27,6 @@
  */
 namespace VuFindTest\Mink;
 use Behat\Mink\Element\Element;
-use Behat\Mink\Session;
 
 /**
  * Mink cart test class.
