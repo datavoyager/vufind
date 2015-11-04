@@ -44,13 +44,6 @@ use Behat\Mink\Driver\ZombieDriver, Behat\Mink\Session,
 abstract class MinkTestCase extends DbTestCase
 {
     /**
-     * Mink driver
-     *
-     * @var ZombieDriver
-     */
-    protected static $driver = false;
-
-    /**
      * Modified configurations
      *
      * @var array
@@ -112,20 +105,40 @@ abstract class MinkTestCase extends DbTestCase
     }
 
     /**
+     * Are we using the Zombie.js driver?
+     *
+     * @return bool
+     */
+    protected function isZombieDriver()
+    {
+        return getenv('VUFIND_MINK_DRIVER') !== 'selenium';
+    }
+
+    /**
+     * Test an element for visibility.
+     *
+     * @param Element $element Element to test
+     *
+     * @return bool
+     */
+    protected function checkVisibility(Element $element)
+    {
+        // Zombie.js does not support visibility checks; just assume true.
+        return $this->isZombieDriver() ? true : $element->isVisible();
+    }
+
+    /**
      * Get the Mink driver, initializing it if necessary.
      *
      * @return ZombieDriver
      */
     protected function getMinkDriver()
     {
-        if (self::$driver === false) {
-            self::$driver = (getenv('VUFIND_MINK_DRIVER') === 'selenium')
-                ? new \Behat\Mink\Driver\Selenium2Driver('firefox')
-                : new ZombieDriver(
-                    new \Behat\Mink\Driver\NodeJS\Server\ZombieServer()
-                );
-        }
-        return self::$driver;
+        return !$this->isZombieDriver()
+            ? new \Behat\Mink\Driver\Selenium2Driver('firefox')
+            : new ZombieDriver(
+                new \Behat\Mink\Driver\NodeJS\Server\ZombieServer()
+            );
     }
 
     /**
@@ -248,9 +261,6 @@ abstract class MinkTestCase extends DbTestCase
      */
     public static function tearDownAfterClass()
     {
-        // Stop the Mink driver!
-        if (self::$driver !== false) {
-            self::$driver->stop();
-        }
+        // No teardown actions at this time.
     }
 }
