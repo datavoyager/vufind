@@ -115,6 +115,18 @@ abstract class MinkTestCase extends DbTestCase
     }
 
     /**
+     * Assert an HTTP status code (if supported).
+     *
+     * @return void
+     */
+    protected function assertHttpStatus($code)
+    {
+        // This assertion is not supported by Selenium.
+        if ($this->isZombieDriver()) {
+            $this->assertEquals(200, $this->getMinkSession()->getStatusCode());
+        }
+    }
+    /**
      * Test an element for visibility.
      *
      * @param Element $element Element to test
