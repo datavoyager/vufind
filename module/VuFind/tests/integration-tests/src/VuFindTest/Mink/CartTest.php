@@ -55,12 +55,11 @@ class CartTest extends \VuFindTest\Unit\MinkTestCase
     /**
      * Get a reference to a standard search results page.
      *
-     * @param Session $session Mink session
-     *
      * @return Element
      */
-    protected function getSearchResultsPage(Session $session)
+    protected function getSearchResultsPage()
     {
+        $session = $this->getMinkSession();
         $path = '/Search/Results?lookfor=id%3A(testsample1+OR+testsample2)';
         $session->visit($this->getVuFindUrl() . $path);
         return $session->getPage();
@@ -70,20 +69,18 @@ class CartTest extends \VuFindTest\Unit\MinkTestCase
      * Click the "add to cart" button with nothing selected; fail if this does
      * not display an appropriate message.
      *
-     * @param Session $session    Mink session
      * @param Element $page       Page element
      * @param Element $updateCart Add to cart button
      *
      * @return void
      */
-    protected function tryAddingNothingToCart(Session $session, Element $page,
-        Element $updateCart
-    ) {
+    protected function tryAddingNothingToCart(Element $page, Element $updateCart)
+    {
         // This test is a bit timing-sensitive, so introduce a retry loop before
         // completely failing.
         for ($clickRetry = 0; $clickRetry <= 4; $clickRetry++) {
             $updateCart->click();
-            $content = $this->findWithWait($session, $page, '.popover-content');
+            $content = $this->findCss($page, '.popover-content');
             if (is_object($content)) {
                 $this->assertEquals(
                     'No items were selected. '
@@ -130,11 +127,9 @@ class CartTest extends \VuFindTest\Unit\MinkTestCase
      * into the cart, then opening the lightbox so that additional actions may
      * be attempted.
      *
-     * @param Session $session Mink session
-     *
      * @return Element
      */
-    protected function setUpGenericCartTest(Session $session)
+    protected function setUpGenericCartTest()
     {
         // Activate the cart:
         $this->changeConfigs(
@@ -143,15 +138,15 @@ class CartTest extends \VuFindTest\Unit\MinkTestCase
             ]
         );
 
-        $page = $this->getSearchResultsPage($session);
+        $page = $this->getSearchResultsPage();
 
         // Click "add" without selecting anything.
-        $updateCart = $this->findWithWait($session, $page, '#updateCart');
-        $this->tryAddingNothingToCart($session, $page, $updateCart);
+        $updateCart = $this->findCss($page, '#updateCart');
+        $this->tryAddingNothingToCart($page, $updateCart);
 
         // Now actually select something:
         $this->addCurrentPageToCart($page, $updateCart);
-        $this->assertEquals('2', $this->findWithWait($session, $page, '#cartItems strong')->getText());
+        $this->assertEquals('2', $this->findCss($page, '#cartItems strong')->getText());
 
         // Open the cart and empty it:
         $this->openCartLightbox($page);
@@ -162,14 +157,13 @@ class CartTest extends \VuFindTest\Unit\MinkTestCase
     /**
      * Assert that the open cart lightbox is empty.
      *
-     * @param Session $session Mink session
-     * @param Element $page    Page element
+     * @param Element $page Page element
      *
      * @return void
      */
-    protected function checkEmptyCart(Session $session, Element $page)
+    protected function checkEmptyCart(Element $page)
     {
-        $info = $this->findWithWait($session, $page, '.modal-body .form-inline .alert-info');
+        $info = $this->findCss($page, '.modal-body .form-inline .alert-info');
         $this->assertEquals('Your Book Bag is empty.', $info->getText());
     }
 
@@ -177,14 +171,13 @@ class CartTest extends \VuFindTest\Unit\MinkTestCase
      * Assert that the "no items were selected" message is visible in the cart
      * lightbox.
      *
-     * @param Session $session Mink session
-     * @param Element $page    Page element
+     * @param Element $page Page element
      *
      * @return void
      */
-    protected function checkForNonSelectedMessage(Session $session, Element $page)
+    protected function checkForNonSelectedMessage(Element $page)
     {
-        $warning = $this->findWithWait($session, $page, '.modal-body .alert .message');
+        $warning = $this->findCss($page, '.modal-body .alert .message');
         $this->assertEquals(
             'No items were selected. '
             . 'Please click on a checkbox next to an item and try again.',
@@ -230,30 +223,27 @@ class CartTest extends \VuFindTest\Unit\MinkTestCase
      */
     public function testFillAndDeleteFromCart()
     {
-        $session = $this->getMinkSession();
-        $session->start();
-        $page = $this->setUpGenericCartTest($session);
-        $delete = $this->findWithWait($session, $page, '#cart-delete-label');
+        $page = $this->setUpGenericCartTest();
+        $delete = $this->findCss($page, '#cart-delete-label');
 
         // First try deleting without selecting anything:
         $delete->click();
-        $this->checkForNonSelectedMessage($session, $page);
+        $this->checkForNonSelectedMessage($page);
 
         // Now actually select the records to delete:
         $this->selectAllItemsInCart($page);
         $delete->click();
-        $deleteConfirm = $this->findWithWait($session, $page, '#cart-confirm-delete');
+        $deleteConfirm = $this->findCss($page, '#cart-confirm-delete');
         $deleteConfirm->click();
-        $this->checkEmptyCart($session, $page);
+        $this->checkEmptyCart($page);
 
         // Close the lightbox:
-        $close = $this->findWithWait($session, $page, 'button.close');
+        $close = $this->findCss($page, 'button.close');
         $close->click();
 
         // Confirm that the cart has truly been emptied:
-        $this->assertEquals('0', $this->findWithWait($session, $page, '#cartItems strong')->getText());
-
-        $session->stop();
+        sleep(1);   // wait for display to update
+        $this->assertEquals('0', $this->findCss($page, '#cartItems strong')->getText());
     }
 
     /**
@@ -264,25 +254,22 @@ class CartTest extends \VuFindTest\Unit\MinkTestCase
      */
     public function testFillAndEmptyCart()
     {
-        $session = $this->getMinkSession();
-        $session->start();
-        $page = $this->setUpGenericCartTest($session);
+        $page = $this->setUpGenericCartTest();
 
         // Activate the "empty" control:
-        $empty = $this->findWithWait($session, $page, '#cart-empty-label');
+        $empty = $this->findCss($page, '#cart-empty-label');
         $empty->click();
-        $emptyConfirm = $this->findWithWait($session, $page, '#cart-confirm-empty');
+        $emptyConfirm = $this->findCss($page, '#cart-confirm-empty');
         $emptyConfirm->click();
-        $this->checkEmptyCart($session, $page);
+        $this->checkEmptyCart($page);
 
         // Close the lightbox:
-        $close = $this->findWithWait($session, $page, 'button.close');
+        $close = $this->findCss($page, 'button.close');
         $close->click();
 
         // Confirm that the cart has truly been emptied:
-        $this->assertEquals('0', $this->findWithWait($session, $page, '#cartItems strong')->getText());
-
-        $session->stop();
+        sleep(1);   // wait for display to update
+        $this->assertEquals('0', $this->findCss($page, '#cartItems strong')->getText());
     }
 
     /**
@@ -292,32 +279,28 @@ class CartTest extends \VuFindTest\Unit\MinkTestCase
      */
     public function testCartEmail()
     {
-        $session = $this->getMinkSession();
-        $session->start();
-        $page = $this->setUpGenericCartTest($session);
-        $button = $this->findWithWait($session, $page, '.cart-controls button[name=email]');
+        $page = $this->setUpGenericCartTest();
+        $button = $this->findCss($page, '.cart-controls button[name=email]');
 
         // First try clicking without selecting anything:
         $button->click();
-        $this->checkForNonSelectedMessage($session, $page);
+        $this->checkForNonSelectedMessage($page);
 
         // Now do it for real -- we should get a login prompt.
         $this->selectAllItemsInCart($page);
         $button->click();
-        $title = $this->findWithWait($session, $page, '#modalTitle');
+        $title = $this->findCss($page, '#modalTitle');
         $this->assertEquals('Email Selected Book Bag Items', $title->getText());
         $this->checkForLoginMessage($page);
 
         // Create an account.
-        $this->findWithWait($session, $page, '.modal-body .createAccountLink')->click();
-        $this->fillInAccountForm($session, $page);
-        $this->findWithWait($session, $page, '.modal-body .btn.btn-primary')->click();
+        $this->findCss($page, '.modal-body .createAccountLink')->click();
+        $this->fillInAccountForm($page);
+        $this->findCss($page, '.modal-body .btn.btn-primary')->click();
 
         // Test that we now have an email form.
-        $toField = $this->findWithWait($session, $page, '#email_to');
+        $toField = $this->findCss($page, '#email_to');
         $this->assertNotNull($toField);
-
-        $session->stop();
     }
 
     /**
@@ -327,19 +310,17 @@ class CartTest extends \VuFindTest\Unit\MinkTestCase
      */
     public function testCartSave()
     {
-        $session = $this->getMinkSession();
-        $session->start();
-        $page = $this->setUpGenericCartTest($session);
-        $button = $this->findWithWait($session, $page, '.cart-controls button[name=saveCart]');
+        $page = $this->setUpGenericCartTest();
+        $button = $this->findCss($page, '.cart-controls button[name=saveCart]');
 
         // First try clicking without selecting anything:
         $button->click();
-        $this->checkForNonSelectedMessage($session, $page);
+        $this->checkForNonSelectedMessage($page);
 
         // Now do it for real -- we should get a login prompt.
         $this->selectAllItemsInCart($page);
         $button->click();
-        $title = $this->findWithWait($session, $page, '#modalTitle');
+        $title = $this->findCss($page, '#modalTitle');
         $this->assertEquals('Save Selected Book Bag Items', $title->getText());
         $this->checkForLoginMessage($page);
 
@@ -348,19 +329,17 @@ class CartTest extends \VuFindTest\Unit\MinkTestCase
         $this->submitLoginForm($page);
 
         // Save the favorites.
-        $submit = $this->findWithWait($session, $page, '.modal-body input[name=submit]');
+        $submit = $this->findCss($page, '.modal-body input[name=submit]');
         $submit->click();
-        $result = $this->findWithWait($session, $page, '.modal-body .alert-info');
+        $result = $this->findCss($page, '.modal-body .alert-info');
         $this->assertEquals(
             'Your item(s) were saved successfully', $result->getText()
         );
 
         // Click the close button.
-        $submit = $this->findWithWait($session, $page, '.modal-body .btn');
+        $submit = $this->findCss($page, '.modal-body .btn');
         $this->assertEquals('close', $submit->getText());
         $submit->click();
-
-        $session->stop();
     }
 
     /**
@@ -370,32 +349,28 @@ class CartTest extends \VuFindTest\Unit\MinkTestCase
      */
     public function testCartExport()
     {
-        $session = $this->getMinkSession();
-        $session->start();
-        $page = $this->setUpGenericCartTest($session);
-        $button = $this->findWithWait($session, $page, '.cart-controls button[name=export]');
+        $page = $this->setUpGenericCartTest();
+        $button = $this->findCss($page, '.cart-controls button[name=export]');
 
         // First try clicking without selecting anything:
         $button->click();
-        $this->checkForNonSelectedMessage($session, $page);
+        $this->checkForNonSelectedMessage($page);
 
         // Now do it for real -- we should get an export option list:
         $this->selectAllItemsInCart($page);
         $button->click();
-        $title = $this->findWithWait($session, $page, '#modalTitle');
+        $title = $this->findCss($page, '#modalTitle');
         $this->assertEquals('Export Selected Book Bag Items', $title->getText());
 
         // Select EndNote option
-        $select = $this->findWithWait($session, $page, '#format');
+        $select = $this->findCss($page, '#format');
         $select->selectOption('EndNote');
 
         // Do the export:
-        $submit = $this->findWithWait($session, $page, '.modal-body input[name=submit]');
+        $submit = $this->findCss($page, '.modal-body input[name=submit]');
         $submit->click();
-        $result = $this->findWithWait($session, $page, '.modal-body .alert .text-center .btn');
+        $result = $this->findCss($page, '.modal-body .alert .text-center .btn');
         $this->assertEquals('Download File', $result->getText());
-
-        $session->stop();
     }
 
     /**
@@ -406,13 +381,12 @@ class CartTest extends \VuFindTest\Unit\MinkTestCase
     public function testCartPrint()
     {
         $session = $this->getMinkSession();
-        $session->start();
-        $page = $this->setUpGenericCartTest($session);
-        $button = $this->findWithWait($session, $page, '.cart-controls button[name=print]');
+        $page = $this->setUpGenericCartTest();
+        $button = $this->findCss($page, '.cart-controls button[name=print]');
 
         // First try clicking without selecting anything:
         $button->click();
-        $this->checkForNonSelectedMessage($session, $page);
+        $this->checkForNonSelectedMessage($page);
 
         // Now do it for real -- we should get redirected.
         $this->selectAllItemsInCart($page);
@@ -421,8 +395,6 @@ class CartTest extends \VuFindTest\Unit\MinkTestCase
         $this->assertEquals(
             'print=true&id[]=VuFind|testsample1&id[]=VuFind|testsample2', $params
         );
-
-        $session->stop();
     }
 
     /**

@@ -58,6 +58,13 @@ abstract class MinkTestCase extends DbTestCase
     protected $modifiedConfigs;
 
     /**
+     * Mink session
+     *
+     * @var Session
+     */
+    protected $session;
+
+    /**
      * Reconfigure VuFind for the current test.
      *
      * @param array $configs Array of settings to change. Top-level keys correspond
@@ -128,7 +135,24 @@ abstract class MinkTestCase extends DbTestCase
      */
     protected function getMinkSession()
     {
-        return new Session($this->getMinkDriver());
+        if (empty($this->session)) {
+            $this->session = new Session($this->getMinkDriver());
+            $this->session->start();
+        }
+        return $this->session;
+    }
+
+    /**
+     * Shut down the Mink session.
+     *
+     * @return void
+     */
+    protected function stopMinkSession()
+    {
+        if (!empty($this->session)) {
+            $this->session->stop();
+            $this->session = null;
+        }
     }
 
     /**
@@ -172,17 +196,16 @@ abstract class MinkTestCase extends DbTestCase
     /**
      * Wait for an element to exist, then retrieve it.
      *
-     * @param Session $session  Mink session
      * @param Element $page     Page element
      * @param string  $selector CSS selector
      * @param int     $timeout  Wait timeout (in ms)
      *
      * @return mixed
      */
-    protected function findWithWait(Session $session, Element $page, $selector,
-        $timeout = 1000
-    ) {
-        $session->wait($timeout, "$('$selector').children().length > 0");
+    protected function findCss(Element $page, $selector, $timeout = 1000)
+    {
+        $session = $this->getMinkSession();
+        $session->wait($timeout, "$('$selector').length > 0");
         $result = $page->find('css', $selector);
         $this->assertTrue(is_object($result));
         return $result;
@@ -214,6 +237,7 @@ abstract class MinkTestCase extends DbTestCase
      */
     public function tearDown()
     {
+        $this->stopMinkSession();
         $this->restoreConfigs();
     }
 
