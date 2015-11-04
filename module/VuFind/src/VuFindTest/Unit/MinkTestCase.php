@@ -117,6 +117,8 @@ abstract class MinkTestCase extends DbTestCase
     /**
      * Assert an HTTP status code (if supported).
      *
+     * @param int $code Expected status code.
+     *
      * @return void
      */
     protected function assertHttpStatus($code)
@@ -126,6 +128,22 @@ abstract class MinkTestCase extends DbTestCase
             $this->assertEquals(200, $this->getMinkSession()->getStatusCode());
         }
     }
+
+    /**
+     * Sleep if necessary.
+     *
+     * @param int $secs Seconds to sleep
+     *
+     * @return void
+     */
+    protected function snooze($secs = 1)
+    {
+        // Sleep is not necessary for Zombie.js.
+        if (!$this->isZombieDriver()) {
+            sleep($secs);
+        }
+    }
+
     /**
      * Test an element for visibility.
      *

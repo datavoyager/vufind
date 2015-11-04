@@ -58,12 +58,12 @@ class AdvancedSearchTest extends \VuFindTest\Unit\MinkTestCase
 
         // Add a group
         $session->executeScript("addGroup()");
-        sleep(1);
+        $this->snooze();
         $this->findCss($page, '#group1');
 
         // Add a search term
         $session->executeScript("addSearch(0)"); // add_search_link_0 click
-        sleep(1);
+        $this->snooze();
         $this->findCss($page, '#search0_3');
         // No visible x next to lonely search term
         $this->findCss($page, '#search1_0 .close.hidden');

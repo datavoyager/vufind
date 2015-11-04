@@ -241,7 +241,7 @@ class CartTest extends \VuFindTest\Unit\MinkTestCase
         $close->click();
 
         // Confirm that the cart has truly been emptied:
-        sleep(1);   // wait for display to update
+        $this->snooze(); // wait for display to update
         $this->assertEquals('0', $this->findCss($page, '#cartItems strong')->getText());
     }
 
@@ -267,7 +267,7 @@ class CartTest extends \VuFindTest\Unit\MinkTestCase
         $close->click();
 
         // Confirm that the cart has truly been emptied:
-        sleep(1);   // wait for display to update
+        $this->snooze(); // wait for display to update
         $this->assertEquals('0', $this->findCss($page, '#cartItems strong')->getText());
     }
 

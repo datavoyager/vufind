@@ -123,7 +123,7 @@ class RecordActionsTest extends \VuFindTest\Unit\MinkTestCase
         $this->findCss($page, '.comment.row');
         // Remove comment
         $this->findCss($page, '.comment.row .delete')->click();
-        sleep(1);   // wait for UI update
+        $this->snooze(); // wait for UI update
         $this->assertNull($page->find('css', '.comment.row'));
         // Logout
         $this->findCss($page, '.logoutOptions a[title="Log Out"]')->click();
@@ -155,7 +155,7 @@ class RecordActionsTest extends \VuFindTest\Unit\MinkTestCase
         $this->findCss($page, '.modal-body .btn.btn-primary')->click();
         $this->findCss($page, '.modal #addtag_tag');
         $this->findCss($page, '.modal .close')->click();
-        sleep(1);   // wait for display to update
+        $this->snooze(); // wait for display to update
         $this->findCss($page, '.logoutOptions a[title="Log Out"]')->click();
         // Login
         $page = $this->gotoRecord(); // redirects to search home???
@@ -171,7 +171,7 @@ class RecordActionsTest extends \VuFindTest\Unit\MinkTestCase
         $this->assertEquals('Tags Saved', $success->getText());
         $this->findCss($page, '.modal .close')->click();
         // Count tags
-        sleep(1);   // wait for UI update
+        $this->snooze(); // wait for UI update
         $tags = $page->findAll('css', '#tagList .tag');
         $this->assertEquals(4, count($tags));
         $tvals = [];
@@ -183,7 +183,7 @@ class RecordActionsTest extends \VuFindTest\Unit\MinkTestCase
         $this->assertEquals($tvals, ['2', 'five', 'one', 'three 4']);
         // Remove a tag
         $tags[0]->find('css', 'button')->click();
-        sleep(1);   // wait for UI update
+        $this->snooze(); // wait for UI update
         $tags = $page->findAll('css', '#tagList .tag');
         // Count tags with missing
         $sum = 0;
@@ -196,18 +196,18 @@ class RecordActionsTest extends \VuFindTest\Unit\MinkTestCase
         $this->assertEquals(3, $sum);
         // Log out
         $this->findCss($page, '.logoutOptions a[title="Log Out"]')->click();
-        sleep(1);   // wait for UI update
+        $this->snooze(); // wait for UI update
 
         // Flat tags
         $this->assertNull($page->find('css', '#tagList .tag.selected'));
         $this->assertNull($page->find('css', '#tagList .tag .fa'));
         // Login with second account
         $this->findCss($page, '#loginOptions a')->click();
-        sleep(1);
+        $this->snooze();
         $this->findCss($page, '.modal.in [name="username"]');
         $this->fillInLoginForm($page, 'username1', 'test');
         $this->findCss($page, '.modal-body .btn.btn-primary')->click();
-        sleep(1);
+        $this->snooze();
         $page = $this->gotoRecord();
         // Check selected == 0
         $this->assertNull($page->find('css', '#tagList .tag.selected'));
@@ -215,12 +215,12 @@ class RecordActionsTest extends \VuFindTest\Unit\MinkTestCase
         $this->findCss($page, '#tagList .tag .fa-plus');
         // Click one
         $this->findCss($page, '#tagList .tag button')->click();
-        sleep(1);
+        $this->snooze();
         // Check selected == 1
         $this->findCss($page, '#tagList .tag.selected');
         // Click again
         $this->findCss($page, '#tagList .tag button')->click();
-        sleep(1);
+        $this->snooze();
         // Check selected == 0
         $this->assertNull($page->find('css', '#tagList .tag.selected'));
         $this->findCss($page, '.logoutOptions a[title="Log Out"]')->click();
