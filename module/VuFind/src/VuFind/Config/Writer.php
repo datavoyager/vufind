@@ -84,7 +84,7 @@ class Writer
      *
      * @param string $section Section to change/add
      * @param string $setting Setting within section to change/add
-     * @param string $value   Value to set
+     * @param string $value   Value to set (or null to unset)
      *
      * @return void
      */
@@ -118,7 +118,11 @@ class Writer
                 $contentParts = explode('=', $content, 2);
                 $key = reset($contentParts);
                 if ($currentSection == $section && trim($key) == $setting) {
-                    $line = $setting . ' = "' . $value . '"';
+                    if ($value === null) {
+                        $line = '';
+                    } else {
+                        $line = $setting . ' = "' . $value . '"';
+                    }
                     if (!empty($comment)) {
                         $line .= ' ;' . $comment;
                     }
